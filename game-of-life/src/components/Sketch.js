@@ -3,7 +3,7 @@ import { game, toggleRun, reset, iterate } from '../golLogic/gol';
 import{ preset } from '../golLogic/presets';
 
 function Sketch() {
-    let [cells, setCells] = useState(100);
+    let [cells, setCells] = useState(40);
     let [pixelWidth, setPixelWidth] = useState(600);
     let [iteration, setIteration] = useState(30);
     let [running, setRunning] = useState(false);
@@ -99,7 +99,11 @@ function Sketch() {
                             <option key={key} value={key}>{key}</option>
                             )) }
                         </select>
-        </label>
+                    </label>
+                    <input 
+                    type="submit"
+                    value="update grid"
+                    />
                 </form>
                 
             </div>

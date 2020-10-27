@@ -40,8 +40,8 @@ const game = (props) =>{
         };
 
         r.setGrid = () =>{
-            grid = Array(cells).fill(0).map(() =>{
-                return Array(cells).fill(0).map(()=>{
+            grid = Array(cells).fill(null).map(() =>{
+                return Array(cells).fill(null).map(()=>{
                     if (Math.random() > props.randomStart / 100){
                         return 0;
                     }else{
@@ -64,14 +64,14 @@ const game = (props) =>{
 
         r.clickHandler = () =>{
             if (!running) {
-                const [x,y] = r.mouseCoord();
-                if (grid[x][y]){
+                const [x, y] = r.mouseCoord();
+                if (grid[x][y]) {
                     grid[x][y] = 0;
-                }else{
+                    } else {
                     grid[x][y] = 1;
-                }
+                    }
                 r.redraw();
-            }
+                }
             return false;
         }
 
@@ -132,7 +132,7 @@ const game = (props) =>{
             deaths.length = 0
             grid.forEach(function(column, i){
                 const bufferColumn = gridBuffer[i];
-                column.forEach(function(cellVal, j){
+                column.forEach(function(j){
                     bufferColumn[j] = r.nextCellState(i,j)
                 });
             });
@@ -164,12 +164,14 @@ const game = (props) =>{
 
         r.countAdj = (i,j)=>{
             return adj.reduce(function(count, pair){
-                const x = i + pair[0]
+                const x = i + pair[0];
                 const y = j + pair[1];
-                if (x >=cells ||
+                if (
+                    x >= cells ||
                     x < 0||
                     y >= cells ||
-                    y < 0){
+                    y < 0
+                    ){
                         return count;
                     }else{
                         return count + grid[x][y];
