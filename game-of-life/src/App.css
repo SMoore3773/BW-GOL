@@ -1,0 +1,15 @@
+.App {
+    text-align: center;
+    margin-top: 50px;
+    margin-bottom: 100px;
+  }
+  
+  .App-logo {
+    height: 40vmin;
+    pointer-events: none;
+  }
+  
+
+  #sketch .canvas {
+    border: 2px solid black;
+  }
