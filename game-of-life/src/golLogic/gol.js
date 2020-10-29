@@ -5,11 +5,13 @@ let toggleRun;
 let reset;
 let iterate;
 
+// game wrapper to pass props
 const game = (props) =>{
     console.log('props', props)
+    // function wrapper for p5
     return(r) =>{
         console.log('r', r)
-
+        //game state
         const iteration = props.iteration;
         const pixelWidth = props.pixelWidth;
         const cells = props.cells;
@@ -24,10 +26,10 @@ const game = (props) =>{
         let gridBuffer;
         const posChange = new Set();
 
-
+        // used to run the draw function at a set rate
         let lifeInterval = setInterval(r.iterate, iteration);
 
-
+        //setup for the p5 canvas
         r.setup = () =>{
             const canvas = r.createCanvas(pixelWidth, pixelWidth);
             canvas.mouseClicked(r.clickHandler);
@@ -35,15 +37,12 @@ const game = (props) =>{
             r.stroke(200);
             r.strokeCap(r.ROUND);
             r.strokeWeight(1)
-            
-            r.noLoop();
-            r.noSmooth();
 
             r.setGrid();
             
             r.setPreset();
         };
-
+        //grid initialization
         r.setGrid = () =>{
             grid = Array(cells).fill(null).map(() =>{
                 return Array(cells).fill(null).map(()=>{
@@ -56,14 +55,14 @@ const game = (props) =>{
             });
             r.bufferInit()
         };
-
+        // preset loading
         r.setPreset = () =>{
             const center = Math.floor(cells/2);
             presetPatterns[props.preset].forEach((set) =>{
                 grid[set[0]+ center][set[1]+ center] = 1;
             });
         };
-
+        // click handler for manual selection of cells
         r.clickHandler = () =>{
             if (!running) {
                 const [x, y] = [Math.floor(r.mouseX/cellSize), Math.floor(r.mouseY/cellSize)];
@@ -76,7 +75,7 @@ const game = (props) =>{
                 }
             return false;
         }
-
+        // run toggle for game 
         r.toggleRun = () =>{
             if(running){
                 clearInterval(lifeInterval);
@@ -86,7 +85,7 @@ const game = (props) =>{
             running = !running;
             props.setRunning(running);
         };
-
+        // reset for game
         r.reset = () =>{
             r.setGeneration(0);
             if (running){
@@ -100,7 +99,7 @@ const game = (props) =>{
             generation = inputGen;
             props.setGeneration(generation);
         };
-
+        // iteration function for both automatic and manual iteration
         r.iterate = () =>{
             const temp = grid;
             grid = gridBuffer;
@@ -110,7 +109,7 @@ const game = (props) =>{
 
             r.action();
         };
-
+        // initial draw function for initialization and manual cell selection
         r.draw = () =>{
             for(let i of Array(cells).keys()) {
                 for (let j of Array(cells).keys()) {
@@ -136,7 +135,7 @@ const game = (props) =>{
             });
             r.runbuffer();
         }
-
+        // buffer initialization for full page buffer
         r.bufferInit = () =>{
             newCells.length = 0
             deadCells.length = 0
@@ -148,7 +147,7 @@ const game = (props) =>{
             });
         };
 
-        
+        //running buffer for cells
         r.runbuffer = () =>{
             const changes = newCells.concat(deadCells);
             newCells.length = 0;
@@ -170,10 +169,9 @@ const game = (props) =>{
             posChange.clear();
         };
 
-        
+        // logic to determin next cell state
         r.nextCellState = (i, j) =>{
             const neighbors = r.countAdj(i, j);
-
             if (grid[i][j]){
                 if (neighbors === 2 || neighbors ===3){
                     return 1;
@@ -190,7 +188,7 @@ const game = (props) =>{
                 }
             }
         };
-
+        
         const adj = [
             [0,1],[1,0],[-1,0],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]
         ];

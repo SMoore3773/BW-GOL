@@ -4,11 +4,11 @@ import {presetPatterns} from '../golLogic/presets'
 
 function Sketch() {
     let [cells, setCells] = useState(25);
-    let [pixelWidth, setPixelWidth] = useState(600);
-    let [iteration, setIteration] = useState(30);
+    let [pixelWidth, setPixelWidth] = useState(650);
+    let [iteration, setIteration] = useState(100);
     let [running, setRunning] = useState(false);
     let [generation, setGeneration] = useState(0);
-    let [randomStart, setRandomStart] = useState(0);
+    
     let [preset, setPreset] = useState('empty')
     let [sketchOpts, setSketchOpts] = useState({
         setGeneration: setGeneration,
@@ -16,7 +16,7 @@ function Sketch() {
         cells: cells,
         pixelWidth: pixelWidth,
         iteration: iteration,
-        randomStart: randomStart,
+        
         preset: preset
     });
     let [golGame, setGolGame] = useState();
@@ -26,11 +26,11 @@ function Sketch() {
             ...sketchOpts,
             cells: cells,
             pixelWidth: pixelWidth,
-            randomStart: randomStart,
+            
             iteration: iteration,
             preset: preset
         });
-    }, [ cells, pixelWidth, iteration, randomStart, preset]);
+    }, [ cells, pixelWidth, iteration,  preset]);
 
     useEffect(() => {
         setGolGame(new window.p5(game(sketchOpts), "sketch"));
@@ -109,7 +109,18 @@ function Sketch() {
                     value="update grid"
                     />
                 </form>
-                
+                <p>From Wikipedia:
+                The Game of Life, also known simply as Life, is a cellular automaton devised by the British mathematician John Horton Conway in 1970. It is a zero-player game, meaning that its evolution is determined by its initial state, requiring no further input. One interacts with the Game of Life by creating an initial configuration and observing how it evolves. It is Turing complete and can simulate a universal constructor or any other Turing machine.
+                </p>
+                <p>Rules of the game</p>
+                <ol>
+                    <li>Any live cell with fewer than two live neighbours dies, as if by underpopulation.</li>
+                    <li>Any live cell with two or three live neighbours lives on to the next generation.</li>
+                    <li>Any live cell with more than three live neighbours dies, as if by overpopulation.</li>
+                    <li>Any dead cell with exactly three live neighbours becomes a live cell, as if by reproduction.
+</li>
+                </ol>
+                <a href="https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life#Examples_of_patterns">Wiki for the Game of Life</a>
             </div>
         </>
     )
