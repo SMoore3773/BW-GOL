@@ -1,35 +1,40 @@
 
-import {preset} from './presets'
+import {presetPatterns} from './presets'
 
 let toggleRun;
 let reset;
 let iterate;
 
 const game = (props) =>{
-
+    console.log('props', props)
     return(r) =>{
+        console.log('r', r)
 
         const iteration = props.iteration;
-        const pixelWidth = props.puxelWidth;
+        const pixelWidth = props.pixelWidth;
         const cells = props.cells;
         const cellSize = pixelWidth/cells;
 
+        
         let generation = 0;
         let running = false;
-        const births = [];
-        const deaths = [];
+        const newCells = [];
+        const deadCells = [];
         let grid;
         let gridBuffer;
+        const posChange = new Set();
 
-        let interval = setInterval(r.iterate, iteration);
+
+        let lifeInterval = setInterval(r.iterate, iteration);
+
 
         r.setup = () =>{
             const canvas = r.createCanvas(pixelWidth, pixelWidth);
             canvas.mouseClicked(r.clickHandler);
             
             r.stroke(200);
-            r.strokeCap(r.SQUARE);
-            r.strokeWeight(2)
+            r.strokeCap(r.ROUND);
+            r.strokeWeight(1)
             
             r.noLoop();
             r.noSmooth();
@@ -42,11 +47,8 @@ const game = (props) =>{
         r.setGrid = () =>{
             grid = Array(cells).fill(null).map(() =>{
                 return Array(cells).fill(null).map(()=>{
-                    if (Math.random() > props.randomStart / 100){
-                        return 0;
-                    }else{
-                        return 1;
-                    }
+                    return 0
+                   
                 });
             });
             gridBuffer = Array(cells).fill(null).map(()=>{
@@ -57,14 +59,14 @@ const game = (props) =>{
 
         r.setPreset = () =>{
             const center = Math.floor(cells/2);
-            preset[props.preset].forEach((set) =>{
+            presetPatterns[props.preset].forEach((set) =>{
                 grid[set[0]+ center][set[1]+ center] = 1;
             });
         };
 
         r.clickHandler = () =>{
             if (!running) {
-                const [x, y] = r.mouseCoord();
+                const [x, y] = [Math.floor(r.mouseX/cellSize), Math.floor(r.mouseY/cellSize)];
                 if (grid[x][y]) {
                     grid[x][y] = 0;
                     } else {
@@ -75,15 +77,11 @@ const game = (props) =>{
             return false;
         }
 
-        r.mouseCoord = () =>{
-            return[Math.floor(r.mouseX/cellSize), Math.floor(r.mouseY/cellSize)]
-        };
-
         r.toggleRun = () =>{
             if(running){
-                clearInterval(interval);
+                clearInterval(lifeInterval);
             }else{
-                interval = setInterval(r.iterate, iteration);
+                lifeInterval = setInterval(r.iterate, iteration);
             }
             running = !running;
             props.setRunning(running);
@@ -98,8 +96,8 @@ const game = (props) =>{
             r.redraw();
         };
 
-        r.setGeneration = (propsGen) =>{
-            generation = propsGen;
+        r.setGeneration = (inputGen) =>{
+            generation = inputGen;
             props.setGeneration(generation);
         };
 
@@ -110,16 +108,16 @@ const game = (props) =>{
 
             r.setGeneration(generation + 1);
 
-            r.draw();
-        }
+            r.action();
+        };
 
         r.draw = () =>{
-            for(let i of Array(cells).keys()){
-                for (let j of Array(cells).keys()){
+            for(let i of Array(cells).keys()) {
+                for (let j of Array(cells).keys()) {
                     if (grid[i][j]){
-                        r.fill(50);
+                        r.fill(0);
                     }else{
-                        r.fill(200);
+                        r.fill(255);
                     }
                     r.rect(i * cellSize, j * cellSize, cellSize);
                 }
@@ -127,17 +125,52 @@ const game = (props) =>{
             r.bufferInit();
         };
 
+        r.action = () =>{
+            r.fill(0);
+            newCells.forEach((newCell)=>{
+                r.rect(newCell[0] * cellSize, newCell[1] * cellSize, cellSize)
+            });
+            r.fill(255);
+            deadCells.forEach((deadCell)=>{
+                r.rect(deadCell[0] * cells, deadCell[1] * cellSize, cellSize)
+            });
+            r.runbuffer();
+        }
+
         r.bufferInit = () =>{
-            births.length = 0
-            deaths.length = 0
+            newCells.length = 0
+            deadCells.length = 0
             grid.forEach(function(column, i){
                 const bufferColumn = gridBuffer[i];
-                column.forEach(function(j){
+                column.forEach(function(cellval, j){
                     bufferColumn[j] = r.nextCellState(i,j)
                 });
             });
         };
 
+        
+        r.runbuffer = () =>{
+            const changes = newCells.concat(deadCells);
+            newCells.length = 0;
+            deadCells.length = 0;
+            changes.forEach((cell)=>{
+                posChange.add(`${cell[0]}, ${cell[1]}`);
+                adj.forEach(function(set){
+                    const x = (cell[0] + set[0] + cells) % cells;
+                    const y = (cell[1] + set[1] + cells) % cells;
+                    posChange.add(`${x},${y}`);
+                });
+            });
+            posChange.forEach((cellStr) =>{
+                const cell = cellStr.split(',');
+                const x = parseInt(cell[0]);
+                const y = parseInt(cell[1]);
+                gridBuffer[x][y] = r.nextCellState(x,y)
+            });
+            posChange.clear();
+        };
+
+        
         r.nextCellState = (i, j) =>{
             const neighbors = r.countAdj(i, j);
 
@@ -145,12 +178,12 @@ const game = (props) =>{
                 if (neighbors === 2 || neighbors ===3){
                     return 1;
                 }else{
-                    deaths.push([i,j]);
+                    deadCells.push([i,j]);
                     return 0;
                 }
             }else{
                 if (neighbors ===3){
-                    births.push([i,j]);
+                    newCells.push([i,j]);
                     return 1;
                 }else{
                     return 0;
@@ -160,15 +193,15 @@ const game = (props) =>{
 
         const adj = [
             [0,1],[1,0],[-1,0],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]
-        ]
+        ];
 
-        r.countAdj = (i,j)=>{
-            return adj.reduce(function(count, pair){
-                const x = i + pair[0];
-                const y = j + pair[1];
+        r.countAdj = (i,j) => {
+            return adj.reduce(function(count, set) {
+                const x = i + set[0];
+                const y = j + set[1];
                 if (
                     x >= cells ||
-                    x < 0||
+                    x < 0 ||
                     y >= cells ||
                     y < 0
                     ){
@@ -176,6 +209,7 @@ const game = (props) =>{
                     }else{
                         return count + grid[x][y];
                     }
+                 
             }, 0);
         };
 

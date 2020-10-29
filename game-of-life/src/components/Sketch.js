@@ -1,15 +1,15 @@
 import React, {useState, useEffect} from 'react';
 import { game, toggleRun, reset, iterate } from '../golLogic/gol';
-import{ preset } from '../golLogic/presets';
+import {presetPatterns} from '../golLogic/presets'
 
 function Sketch() {
-    let [cells, setCells] = useState(40);
+    let [cells, setCells] = useState(25);
     let [pixelWidth, setPixelWidth] = useState(600);
     let [iteration, setIteration] = useState(30);
     let [running, setRunning] = useState(false);
     let [generation, setGeneration] = useState(0);
-    let [randomStart, setRandomStart] = useState(30);
-    let [preset, setPreset] = useState('block')
+    let [randomStart, setRandomStart] = useState(0);
+    let [preset, setPreset] = useState('empty')
     let [sketchOpts, setSketchOpts] = useState({
         setGeneration: setGeneration,
         setRunning: setRunning,
@@ -19,11 +19,11 @@ function Sketch() {
         randomStart: randomStart,
         preset: preset
     });
-    let [gol, setGol] = useState();
+    let [golGame, setGolGame] = useState();
 
     useEffect(() =>{
         setSketchOpts({
-            ...setSketchOpts,
+            ...sketchOpts,
             cells: cells,
             pixelWidth: pixelWidth,
             randomStart: randomStart,
@@ -33,14 +33,14 @@ function Sketch() {
     }, [ cells, pixelWidth, iteration, randomStart, preset]);
 
     useEffect(() => {
-        setGol(new window.p5(game(sketchOpts), "sketch"));
+        setGolGame(new window.p5(game(sketchOpts), "sketch"));
     }, []);
 
 
     const handleSubmit = (event) =>{
-        gol.remove();
+        golGame.remove();
         setGeneration(0);
-        setGol(new window.p5(game(sketchOpts), "sketch"));
+        setGolGame(new window.p5(game(sketchOpts), "sketch"));
         event.preventDefault();
     };
 
@@ -70,7 +70,7 @@ function Sketch() {
             <div id = 'sketch'>
             </div>
             <div> Generation: {generation}</div>
-            <div class='game'>
+            <div className='game'>
                 <button onClick={()=>{toggleRun()}}>{!running && "Start"}{running && "pause"}</button>
                 <button onClick={reset}>Reset</button>
                 <button onClick={iterate}>Next Iteration</button>
@@ -81,9 +81,10 @@ function Sketch() {
                         <input
                         type='text'
                         value={cells.toString()}
-                        conChange={cellChange}
+                        onChange={cellChange}
                         />
                     </label>
+                    <br/>
                     <label>
                         Iteration time in ms: 
                         <input 
@@ -92,14 +93,17 @@ function Sketch() {
                         onChange={iterationChange}
                         />
                     </label>
+                    <br/>
                     <label>
                         Load preset:  
-                        <select value={preset} onChange={presetChange}>
-                            { Object.keys(preset).map((key) => (
-                            <option key={key} value={key}>{key}</option>
+                        <select 
+                        value={preset} onChange={presetChange}>
+                            { Object.keys(presetPatterns).map((key) => (
+                            <option key={key} value={key}> {key} </option>
                             )) }
                         </select>
                     </label>
+                    <br/>
                     <input 
                     type="submit"
                     value="update grid"

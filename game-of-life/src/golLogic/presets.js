@@ -1,5 +1,5 @@
-const preset = {
-    '':[],
+const presetPatterns = {
+    'empty':[],
     'block':[
         [0,0],
         [1,0],
@@ -8,4 +8,4 @@ const preset = {
     ]
 }
 
-export {preset}
+export { presetPatterns };
